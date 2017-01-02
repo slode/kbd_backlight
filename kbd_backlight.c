@@ -27,8 +27,10 @@ void
 print_help()
 {
 	printf("Usage:\n");
-	printf("kbd_backlight [-e | -d | -l<level>]\n");
-	printf("  where <level> is a number between 0 and 100.\n");
+	printf("kbd_backlight [-i | -d | -l<level>]\n");
+	printf("  where <level> is a number between 0 and 3.\n");
+	printf("  -i increment\n");
+	printf("  -d decrement\n");
 }
 
 int
@@ -63,7 +65,7 @@ main(int argc, char *argv[])
 		}
 	}
 
-  if (iflg || dflg || lflg) {
+  if (!(iflg || dflg || lflg)) {
     print_help();
     return EXIT_FAILURE;
   }
@@ -74,11 +76,12 @@ main(int argc, char *argv[])
       err(1, "%s", kbd_file);
     }
 
-    read(fd, level_str, strlen(level_str));
-    
+    int bread=read(fd, level_str, sizeof(level_str));
+
     int original_level = atoi(level_str);
 
     if (original_level < 0 || original_level > 3) {
+	    printf("Unable to read brightness.\n");
       return EXIT_FAILURE;
     }
 
@@ -107,4 +110,5 @@ main(int argc, char *argv[])
 	write(fd, level_str, strlen(level_str));
 
 	close(fd);
+  printf("%d", level);
 }
