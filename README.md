@@ -18,3 +18,9 @@ Options:
 This is hardcoded to use /sys/class/leds/kbd_backlight/brightness.  If
 your system does not use this file for backlight control, then this
 program isn't for you.
+
+To install, run:
+# root needs to own this
+chown root:root /bin/kbd_backlight
+# Set suid bit to run as root.
+chmod a+xs /bin/kbd_backlight
