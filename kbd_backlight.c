@@ -35,46 +35,25 @@ int
 main(int argc, char *argv[])
 {
 	int ch;
-	int eflg, dflg, lflg;
+	int iflg, dflg, lflg;
 	int level = -1;
 	char level_str[4] = "";
 	int fd;
-	const char *kbd_file = "/sys/class/leds/kbd_backlight/brightness";
+	const char *kbd_file = "/sys/class/leds/asus::kbd_backlight/brightness";
 
-	eflg = dflg = lflg = 0;
+	iflg = dflg = lflg = 0;
 
-	while ((ch = getopt(argc, argv, "edhl:")) != -1) {
+	while ((ch = getopt(argc, argv, "idhl:")) != -1) {
 		switch (ch) {
-		case 'e':
-			eflg = 1;
-			if (dflg || lflg) {
-				print_help();
-				return EXIT_FAILURE;
-			}
-
-			level = 100;
+		case 'i':
+			iflg = 1;
 			break;
 		case 'd':
 			dflg = 1;
-			if (eflg || lflg) {
-				print_help();
-				return EXIT_FAILURE;
-			}
-
-			level = 0;
 			break;
 		case 'l':
 			lflg = 1;
-			if (dflg || eflg) {
-				print_help();
-				return EXIT_FAILURE;
-			}
-
 			level = atoi(optarg);
-			if (level < 0 || level > 100) {
-				print_help();
-				return EXIT_FAILURE;
-			}
 			break;
 		case '?':
 		case 'h':
@@ -84,12 +63,40 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if (level == -1) {
-		print_help();
-		return EXIT_FAILURE;
-	} else {
-		snprintf(level_str, sizeof level_str, "%d", level);
-	}
+  if (iflg || dflg || lflg) {
+    print_help();
+    return EXIT_FAILURE;
+  }
+
+	if (iflg || dflg) {
+    fd = open(kbd_file, O_RDONLY);
+    if (fd == -1) {
+      err(1, "%s", kbd_file);
+    }
+
+    read(fd, level_str, strlen(level_str));
+    
+    int original_level = atoi(level_str);
+
+    if (original_level < 0 || original_level > 3) {
+      return EXIT_FAILURE;
+    }
+
+    if (iflg) {
+      level = original_level + 1;
+    } else {
+      level = original_level - 1;
+    }
+
+    close(fd);
+  }
+
+  if (level < 0 || level > 3) {
+    print_help();
+    return EXIT_FAILURE;
+  }
+
+	snprintf(level_str, sizeof level_str, "%d", level);
 
 	fd = open(kbd_file, O_TRUNC | O_WRONLY);
 
