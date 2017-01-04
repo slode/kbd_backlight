@@ -26,51 +26,51 @@
 void
 print_help()
 {
-	printf("Usage:\n");
-	printf("kbd_backlight [-i | -d | -l<level>]\n");
-	printf("  where <level> is a number between 0 and 3.\n");
-	printf("  -i increment\n");
-	printf("  -d decrement\n");
+  printf("Usage:\n");
+  printf("kbd_backlight [-i | -d | -l<level>]\n");
+  printf("  where <level> is a number between 0 and 3.\n");
+  printf("  -i increment\n");
+  printf("  -d decrement\n");
 }
 
 int
 main(int argc, char *argv[])
 {
-	int ch;
-	int iflg, dflg, lflg;
-	int level = -1;
-	char level_str[4] = "";
-	int fd;
-	const char *kbd_file = "/sys/class/leds/asus::kbd_backlight/brightness";
+  int ch;
+  int iflg, dflg, lflg;
+  int level = -1;
+  char level_str[4] = "";
+  int fd;
+  const char *kbd_file = "/sys/class/leds/asus::kbd_backlight/brightness";
 
-	iflg = dflg = lflg = 0;
+  iflg = dflg = lflg = 0;
 
-	while ((ch = getopt(argc, argv, "idhl:")) != -1) {
-		switch (ch) {
-		case 'i':
-			iflg = 1;
-			break;
-		case 'd':
-			dflg = 1;
-			break;
-		case 'l':
-			lflg = 1;
-			level = atoi(optarg);
-			break;
-		case '?':
-		case 'h':
-		default:
-			print_help();
-			return EXIT_FAILURE;
-		}
-	}
+  while ((ch = getopt(argc, argv, "idhl:")) != -1) {
+    switch (ch) {
+    case 'i':
+      iflg = 1;
+      break;
+    case 'd':
+      dflg = 1;
+      break;
+    case 'l':
+      lflg = 1;
+      level = atoi(optarg);
+      break;
+    case '?':
+    case 'h':
+    default:
+      print_help();
+      return EXIT_FAILURE;
+    }
+  }
 
   if (!(iflg || dflg || lflg)) {
     print_help();
     return EXIT_FAILURE;
   }
 
-	if (iflg || dflg) {
+  if (iflg || dflg) {
     fd = open(kbd_file, O_RDONLY);
     if (fd == -1) {
       err(1, "%s", kbd_file);
@@ -81,7 +81,7 @@ main(int argc, char *argv[])
     int original_level = atoi(level_str);
 
     if (original_level < 0 || original_level > 3) {
-	    printf("Unable to read brightness.\n");
+      printf("Unable to read brightness.\n");
       return EXIT_FAILURE;
     }
 
@@ -99,16 +99,16 @@ main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
-	snprintf(level_str, sizeof level_str, "%d", level);
+  snprintf(level_str, sizeof level_str, "%d", level);
 
-	fd = open(kbd_file, O_TRUNC | O_WRONLY);
+  fd = open(kbd_file, O_TRUNC | O_WRONLY);
 
-	if (fd == -1) {
-		err(1, "%s", kbd_file);
-	}
+  if (fd == -1) {
+    err(1, "%s", kbd_file);
+  }
 
-	write(fd, level_str, strlen(level_str));
+  write(fd, level_str, strlen(level_str));
 
-	close(fd);
+  close(fd);
   printf("%d", level);
 }
